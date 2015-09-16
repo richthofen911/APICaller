@@ -1,7 +1,9 @@
 package net.callofdroidy.apicaller;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -9,36 +11,45 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 /**
  * Created by Tuotuo on 13/09/2015.
  */
 public class APICaller {
-    private String APIUrl;
+    private String APIUrlStr;
+    private String APIUrlEncoded;
+
     private int requestMethod; //Request.Method.GET is an int
     private StringRequest requestCallAPI;
-    private RequestQueue requestQueue;
+    private MyRequestQueue requestQueue;
     private Context context;
     private static APICaller singletonInstance;
 
-    private AsyncTask APIExecuter;
-
-    public APICaller(Context cxt){
+    public APICaller(Context cxt, MyRequestQueue myRequestQueue){
         this.context = cxt;
-        requestQueue = Volley.newRequestQueue(context);
+        requestQueue = myRequestQueue;
     }
 
-    public static synchronized APICaller getInstance(Context cxt){
+    public static synchronized APICaller getInstance(Context cxt, MyRequestQueue myRequestQueue){
         if(singletonInstance == null){
-            singletonInstance = new APICaller(cxt);
+            singletonInstance = new APICaller(cxt, myRequestQueue);
         }
         return singletonInstance;
     }
 
-    public void setAPI(String urlBase, String urlAction, String urlParams, int method){
+    public void setAPI(String urlBase, String urlPath, String urlParams, int method){
         if(urlParams == null)
-            APIUrl = urlBase + urlAction;
+            APIUrlStr = urlBase + urlPath;
         else
-            APIUrl = urlBase + urlAction + urlParams;
+            APIUrlStr = urlBase + urlPath + urlParams;
+            APIUrlEncoded = Uri.encode(APIUrlStr).replace("%3A", ":");
+            APIUrlEncoded = APIUrlEncoded.replace("%2F", "/");
+            APIUrlEncoded = APIUrlEncoded.replace("%3F", "?");
+            APIUrlEncoded = APIUrlEncoded.replace("%3D", "=");
+            APIUrlEncoded = APIUrlEncoded.replace("%26", "&");
+            Log.e("url encoded", APIUrlEncoded);
         requestMethod = method;
     }
 
@@ -47,10 +58,10 @@ public class APICaller {
     }
 
     public void execAPI(final VolleyCallback callback){
-        if(APIUrl == null){
+        if(APIUrlEncoded == null){
             callback.onDelivered("API has not been set yet");
         }else {
-            requestCallAPI = new StringRequest(requestMethod, APIUrl, new Response.Listener<String>(){
+            requestCallAPI = new StringRequest(requestMethod, APIUrlEncoded, new Response.Listener<String>(){
                 @Override
                 public void onResponse(String response){
                     requestCallAPI.markDelivered();
