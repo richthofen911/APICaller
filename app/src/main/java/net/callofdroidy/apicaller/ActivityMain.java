@@ -16,7 +16,7 @@ public class ActivityMain extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        APICaller apiCaller = new APICaller(getApplicationContext());
+        APICaller apiCaller = APICaller.getInstance(getApplicationContext());
         apiCaller.setAPI(urlBase, urlAction, null, Request.Method.GET);
         apiCaller.execAPI(new APICaller.VolleyCallback() {
             @Override

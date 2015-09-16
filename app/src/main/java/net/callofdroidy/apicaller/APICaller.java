@@ -18,12 +18,20 @@ public class APICaller {
     private StringRequest requestCallAPI;
     private RequestQueue requestQueue;
     private Context context;
+    private static APICaller singletonInstance;
 
     private AsyncTask APIExecuter;
 
     public APICaller(Context cxt){
         this.context = cxt;
         requestQueue = Volley.newRequestQueue(context);
+    }
+
+    public static synchronized APICaller getInstance(Context cxt){
+        if(singletonInstance == null){
+            singletonInstance = new APICaller(cxt);
+        }
+        return singletonInstance;
     }
 
     public void setAPI(String urlBase, String urlAction, String urlParams, int method){
